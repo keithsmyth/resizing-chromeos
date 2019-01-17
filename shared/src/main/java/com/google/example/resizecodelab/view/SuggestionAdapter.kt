@@ -14,18 +14,17 @@
 */
 package com.google.example.resizecodelab.view
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import com.google.example.resizecodelab.R
-import com.google.example.resizecodelab.model.Suggestion
+import com.google.example.resizecodelab.data.Suggestion
 
 class SuggestionAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<SuggestionAdapter.SuggestionViewHolder>() {
 
-    private val suggestions = ArrayList<Suggestion>()
+    private val suggestions = mutableListOf<Suggestion>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SuggestionViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -43,10 +42,10 @@ class SuggestionAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<Sugg
         return suggestions.size
     }
 
-    fun updateSuggestions (suggestions: Array<Suggestion>) {
+    fun updateSuggestions(suggestions: List<Suggestion>) {
         this.suggestions.clear()
         this.suggestions.addAll(suggestions)
-        notifyDataSetChanged()
+        notifyDataSetChanged() // DiffUtil is recommended for the best user experience in a production application.
     }
 
     class SuggestionViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {

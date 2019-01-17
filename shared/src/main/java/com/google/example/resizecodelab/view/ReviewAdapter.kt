@@ -14,17 +14,16 @@
 */
 package com.google.example.resizecodelab.view
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.google.example.resizecodelab.R
-import com.google.example.resizecodelab.model.Review
+import com.google.example.resizecodelab.data.Review
 
 class ReviewAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
 
-    private val reviews = ArrayList<Review>()
+    private val reviews = mutableListOf<Review>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -42,10 +41,10 @@ class ReviewAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<ReviewAd
         return reviews.size
     }
 
-    fun onReviewsLoaded(reviews: Array<Review>) {
+    fun onReviewsLoaded(reviews: List<Review>) {
         this.reviews.clear()
         this.reviews.addAll(reviews)
-        notifyDataSetChanged()
+        notifyDataSetChanged() // DiffUtil is recommended for the best user experience in a production application.
     }
 
     class ReviewViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {

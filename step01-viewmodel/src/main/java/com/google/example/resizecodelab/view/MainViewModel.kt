@@ -14,41 +14,62 @@
 */
 package com.google.example.resizecodelab.view
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.google.example.resizecodelab.model.AppData
-import com.google.example.resizecodelab.model.DataProvider
+import androidx.lifecycle.*
+import com.google.example.resizecodelab.R
+import com.google.example.resizecodelab.data.DataProvider
+import com.google.example.resizecodelab.data.Review
 
+/**
+ * Facilitates fetching required data and exposes View related data back to view
+ * Survives config changes (e.g. rotation), good place to store data that takes time to recover
+ */
 class MainViewModel : ViewModel() {
 
-    private val internalProductName = MutableLiveData<String>()
-    private val internalIsDescriptionExpanded = MutableLiveData<Boolean>()
-    private val internalAppData = MutableLiveData<AppData>()
-    private val reviewProvider = DataProvider()
+    private val dataProvider = DataProvider()
 
-    val productName: LiveData<String>
-        get() = internalProductName
+    private val appData = dataProvider.fetchData()
 
-    fun setProductName(newName: String) {
-        internalProductName.value = newName
+    val suggestions = dataProvider.fetchSuggestions()
+
+    val showControls: LiveData<Boolean> = Transformations.map(appData) { it != null }
+
+    val productName: LiveData<String> = Transformations.map(appData) { it?.title }
+
+    val productCompany: LiveData<String> = Transformations.map(appData) { it?.developer }
+
+    private val _isDescriptionExpanded = MutableLiveData<Boolean>()
+
+    private val _descriptionText = MediatorLiveData<String>().apply {
+        addSource(appData) { value = determineDescriptionText() }
+        addSource(_isDescriptionExpanded) { value = determineDescriptionText() }
+    }
+    val descriptionText: LiveData<String>
+        get() = _descriptionText
+
+    val expandButtonTextResId: LiveData<Int> = Transformations.map(_isDescriptionExpanded) {
+        if (it == true) {
+            R.string.button_collapse
+        } else {
+            R.string.button_expand
+        }
     }
 
-    val isDescriptionExpanded: LiveData<Boolean>
-        get() = internalIsDescriptionExpanded
+    val reviews: LiveData<List<Review>> = Transformations.map(appData) { it?.reviews }
 
-    fun setDescriptionExpanded(newState: Boolean) {
-        internalIsDescriptionExpanded.value = newState
+    /**
+     * Handle toggle button presses
+     */
+    fun toggleDescriptionExpanded() {
+        _isDescriptionExpanded.value = _isDescriptionExpanded.value != true
     }
 
-    val appData: LiveData<AppData>
-        get() = internalAppData
-
-    init {
-        reviewProvider.fetchData(object : DataProvider.Listener {
-            override fun onSuccess(appData: AppData) {
-                internalAppData.postValue(appData)
+    private fun determineDescriptionText(): String? {
+        return appData.value?.let { appData ->
+            if (_isDescriptionExpanded.value == true) {
+                appData.description
+            } else {
+                appData.shortDescription
             }
-        })
+        }
     }
 }

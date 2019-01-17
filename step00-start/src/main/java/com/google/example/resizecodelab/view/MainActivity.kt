@@ -16,104 +16,93 @@ package com.google.example.resizecodelab.view
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.view.View.GONE
-import android.view.View.VISIBLE
+import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
 import com.google.example.resizecodelab.R
-import com.google.example.resizecodelab.model.AppData
-import com.google.example.resizecodelab.model.DataProvider
-import com.google.example.resizecodelab.model.Suggestion
+import com.google.example.resizecodelab.data.AppData
+import com.google.example.resizecodelab.data.DataProvider
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var reviewAdapter: ReviewAdapter
     private lateinit var suggestionAdapter: SuggestionAdapter
-
-    private var isDescriptionExpanded : Boolean = false
-    private lateinit var productName : String
-
-    private lateinit var appData : AppData
-    private val reviewProvider = DataProvider()
+    private var isDescriptionExpanded: Boolean = false
+    private lateinit var description: String
+    private lateinit var shortDescription: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        productName = getString(R.string.label_product_name)
-
-        reviewProvider.fetchData(object : DataProvider.Listener {
-            override fun onSuccess(appDataReturn: AppData) {
-                appData = appDataReturn
-                handleReviewsUpdate(appData)
-            }
-        })
-
         //Set up recycler view for reviews
         reviewAdapter = ReviewAdapter()
-        recyclerReviews.apply {
-            setHasFixedSize(true)
-            adapter = reviewAdapter
-        }
+        recyclerReviews.adapter = reviewAdapter
 
         //Set up recycler view for suggested products
         suggestionAdapter = SuggestionAdapter()
-        recyclerSuggested.apply {
-            setHasFixedSize(true)
-            adapter = suggestionAdapter
-        }
-        suggestionAdapter.updateSuggestions(getSuggestedProducts())
+        recyclerSuggested.adapter = suggestionAdapter
 
         //Expand/collapse button for product description
-        buttonExpand.setOnClickListener { _ ->
-            toggleExpandButton();
-            updateDescription();
+        buttonExpand.setOnClickListener {
+            toggleExpandButton()
+            updateDescription()
         }
+
+        // Default state.
+        handleReviewsUpdate(null)
+
+        val reviewProvider = DataProvider()
+
+        // Observe main data object
+        reviewProvider.fetchData().observe(this, Observer(::handleReviewsUpdate))
+
+        // Observe secondary data object
+        reviewProvider.fetchSuggestions().observe(
+            this,
+            NullFilteringObserver(suggestionAdapter::updateSuggestions)
+        )
     }
 
     private fun handleReviewsUpdate(appData: AppData?) {
-        progressLoadingReviews.visibility = if (appData == null) VISIBLE else GONE
-        buttonPurchase.visibility = if (appData != null) VISIBLE else GONE
-        buttonExpand.visibility = if (appData != null) VISIBLE else GONE
+        updateControlVisibility(appData != null)
         appData?.let {
             textProductName.text = it.title
             textProductCompany.text = it.developer
-            textProductDescription.text = getDescriptionText(it)
+
             reviewAdapter.onReviewsLoaded(it.reviews)
+
+            description = it.description
+            shortDescription = it.shortDescription
+            updateDescription()
         }
     }
 
-    private fun getDescriptionText(appData: AppData?): String {
-        if (null != appData)
-            return if (isDescriptionExpanded) appData.description else appData.shortDescription
-        else
-            return ""
+    private fun determineDescriptionText(): String {
+        return if (isDescriptionExpanded) {
+            description
+        } else {
+            shortDescription
+        }
     }
 
-    private fun getSuggestedProducts() : Array<Suggestion> {
-        return arrayOf(Suggestion("Gregarious Grogglestock", R.drawable.gregarious),
-            Suggestion("Byzantium Barnacles", R.drawable.byzantium),
-            Suggestion("Cratankerous Cribblewelps", R.drawable.cratankerous),
-            Suggestion("Sunsaritous", R.drawable.sunsari),
-            Suggestion("Squiggalia Scrumptiae", R.drawable.squiggle),
-            Suggestion("Tenachaterous Torna", R.drawable.tenacious),
-            Suggestion("Venemial Venorae", R.drawable.venemial))
+    private fun updateControlVisibility(showControls: Boolean) {
+        progressLoadingReviews.isVisible = !showControls
+        buttonPurchase.isVisible = showControls
+        buttonExpand.isVisible = showControls
     }
 
     private fun toggleExpandButton() {
-        //Invert isDescriptionExpanded
-        isDescriptionExpanded = !isDescriptionExpanded;
+        isDescriptionExpanded = !isDescriptionExpanded
+
+        if (isDescriptionExpanded) {
+            buttonExpand.setText(R.string.button_collapse)
+        } else {
+            buttonExpand.setText(R.string.button_expand)
+        }
     }
 
     private fun updateDescription() {
-        if (null != appData) {
-            if (isDescriptionExpanded) {
-                buttonExpand.text = getString(R.string.button_collapse)
-                textProductDescription.text = appData.description
-
-            } else {
-                buttonExpand.text = getString(R.string.button_expand)
-                textProductDescription.text = appData.shortDescription
-            }
-        }
+        textProductDescription.text = determineDescriptionText()
     }
 }

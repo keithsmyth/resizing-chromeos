@@ -11,6 +11,7 @@ buildscript {
         constraintLayoutVersion = "2.0.0-alpha3"
         lifecycleVersion = "2.1.0-alpha01"
         legacySupportVersion = "1.0.0"
+        coreKtxVersion = "1.0.1"
     }
     repositories {
         google()

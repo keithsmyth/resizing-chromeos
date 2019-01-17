@@ -1,4 +1,4 @@
-/*      Copyright 2018 Google LLC
+/*      Copyright 2019 Google LLC
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -12,6 +12,15 @@
         See the License for the specific language governing permissions and
         limitations under the License.
 */
-package com.google.example.resizecodelab.model
+package com.google.example.resizecodelab.view
 
-data class Review(val name: String, val review: String)
+import androidx.lifecycle.Observer
+
+/**
+ * An Observer that only fires when the value passed in is not null.
+ */
+class NullFilteringObserver<T : Any>(private val nonNullOnChanged: (T) -> Unit) : Observer<T> {
+    override fun onChanged(t: T?) {
+        t?.let { nonNullOnChanged(t) }
+    }
+}

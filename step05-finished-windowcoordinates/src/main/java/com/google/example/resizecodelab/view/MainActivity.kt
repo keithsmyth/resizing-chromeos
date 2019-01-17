@@ -19,9 +19,6 @@ import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
 import android.view.Gravity
-import android.view.View
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.AnticipateOvershootInterpolator
 import android.widget.FrameLayout
@@ -30,29 +27,21 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintsChangedListener
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.example.resizecodelab.R
-import com.google.example.resizecodelab.model.AppData
-import com.google.example.resizecodelab.model.Suggestion
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main_shell.*
 
+private const val KEY_EXPANDED = "KEY_EXPANDED"
 
 class MainActivity : AppCompatActivity() {
 
-    companion object {
-        private const val KEY_PRODUCT_NAME = "KEY_PRODUCT_NAME"
-        private const val KEY_EXPANDED = "KEY_EXPANDED"
-    }
-
-    private lateinit var reviewAdapter: ReviewAdapter
-    private lateinit var suggestionAdapter: SuggestionAdapter
-    private lateinit var viewModel : MainViewModel
+    private lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,15 +50,12 @@ class MainActivity : AppCompatActivity() {
         //Set up constraint layout animations
         constraintMain.loadLayoutDescription(R.xml.constraint_states)
         constraintMain.setOnConstraintsChanged(object : ConstraintsChangedListener() {
+            private val changeBounds = ChangeBounds().apply {
+                duration = 600
+                interpolator = AnticipateOvershootInterpolator(0.2f)
+            }
 
             override fun preLayoutChange(state: Int, layoutId: Int) {
-                //Layout files are no longer replaced so we manually propogate changes
-                progressLoadingReviews.visibility = if (viewModel.appData.value == null) VISIBLE else INVISIBLE
-
-                val changeBounds = ChangeBounds()
-                changeBounds.duration = 600
-                changeBounds.interpolator = AnticipateOvershootInterpolator(0.2f)
-
                 TransitionManager.beginDelayedTransition(constraintMain, changeBounds)
 
                 when (layoutId) {
@@ -126,6 +112,8 @@ class MainActivity : AppCompatActivity() {
             override fun postLayoutChange(stateId: Int, layoutId: Int) {
                 //Request all layout elements be redrawn
                 constraintMain.requestLayout()
+                //Visibility is part of constraint set, so rebinding is necessary
+                viewModel.showControls.value?.let { updateControlVisibility(it) }
             }
         })
 
@@ -133,54 +121,45 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
 
         //Restore savedInstanceState variables
-        savedInstanceState?.getString(KEY_PRODUCT_NAME)?.let { viewModel.setProductName(it) }
-        savedInstanceState?.getBoolean(KEY_EXPANDED)?.let { viewModel.setDescriptionExpanded(it) }
+        savedInstanceState?.getBoolean(KEY_EXPANDED)?.let(viewModel::restoreDescriptionExpanded)
 
         //Set up recycler view for reviews
-        reviewAdapter = ReviewAdapter()
-        recyclerReviews.apply {
-            adapter = reviewAdapter
-        }
+        val reviewAdapter = ReviewAdapter()
+        recyclerReviews.adapter = reviewAdapter
+        viewModel.reviews.observe(this, NullFilteringObserver(reviewAdapter::onReviewsLoaded))
 
         //Set up recycler view for suggested products
-        suggestionAdapter = SuggestionAdapter()
-        recyclerSuggested.apply {
-            adapter = suggestionAdapter
-        }
-        suggestionAdapter.updateSuggestions(getSuggestedProducts())
+        val suggestionAdapter = SuggestionAdapter()
+        recyclerSuggested.adapter = suggestionAdapter
+        viewModel.suggestions.observe(this, NullFilteringObserver(suggestionAdapter::updateSuggestions))
+
+        viewModel.showControls.observe(this, NullFilteringObserver(::updateControlVisibility))
+
+        viewModel.expandButtonTextResId.observe(this, NullFilteringObserver<Int> { resId ->
+            buttonExpand.text = getString(resId)
+        })
+
+        viewModel.productName.observe(this, NullFilteringObserver(textProductName::setText))
+        viewModel.productCompany.observe(this, NullFilteringObserver(textProductCompany::setText))
+        viewModel.descriptionText.observe(this, NullFilteringObserver(textProductDescription::setText))
 
         //Expand/collapse button for product description
-        buttonExpand.setOnClickListener { _ ->
-            viewModel.appData.value?.let {
-                toggleExpandButton();
-            }
-        }
+        buttonExpand.setOnClickListener { viewModel.toggleDescriptionExpanded() }
 
-        //Add Observer to review data
-        viewModel.appData.observe(this, Observer<AppData> { appData ->
-            handleReviewsUpdate(appData)
-        })
-
-        //Add Observer to the description expand/collapse button
-        viewModel.isDescriptionExpanded.observe(this, Observer<Boolean> {
-            if (true == it)
-                buttonExpand.text = getString(R.string.button_collapse)
-            else
-                buttonExpand.text = getString(R.string.button_expand)
-
-            textProductDescription.text = getDescriptionText(viewModel.appData.value)
-        })
-
-        buttonPurchase.setOnClickListener(View.OnClickListener {
+        buttonPurchase.setOnClickListener {
             val textPopupMessage = TextView(this)
             textPopupMessage.gravity = Gravity.CENTER
             textPopupMessage.text = getString(R.string.popup_purchase)
             TextViewCompat.setTextAppearance(textPopupMessage, R.style.TextAppearance_AppCompat_Title)
 
-            val layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER)
+            val layoutParams = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                Gravity.CENTER
+            )
             val framePopup = FrameLayout(this)
             framePopup.layoutParams = layoutParams
-            framePopup.setBackgroundColor(ContextCompat.getColor(this, R.color.background_floating_material_light))
+            framePopup.setBackgroundColor(ContextCompat.getColor(this, android.R.color.white))
 
             framePopup.addView(textPopupMessage)
 
@@ -201,7 +180,7 @@ class MainActivity : AppCompatActivity() {
             val popupWindow = PopupWindow(framePopup, popupWidthPx, popupHeightPx, true)
             popupWindow.elevation = 10f
             popupWindow.showAtLocation(scrollMain, Gravity.NO_GRAVITY, popupX, popupY)
-        })
+        }
 
         //On first load, make sure we are showing the correct layout
         configurationUpdate(resources.configuration)
@@ -209,8 +188,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(KEY_EXPANDED, viewModel.isDescriptionExpanded.value == true)
-        outState.putString(KEY_PRODUCT_NAME, viewModel.productName.value)
+        viewModel.isDescriptionExpanded.value?.let { (outState.putBoolean(KEY_EXPANDED, it)) }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -220,42 +198,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun configurationUpdate(configuration: Configuration) {
         if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
-            constraintMain.setState(R.id.constraintStateLandscape, configuration.screenWidthDp, configuration.screenHeightDp)
+            constraintMain.setState(
+                R.id.constraintStateLandscape,
+                configuration.screenWidthDp,
+                configuration.screenHeightDp
+            )
         else
-            constraintMain.setState(R.id.constraintStatePortrait, configuration.screenWidthDp, configuration.screenHeightDp)
+            constraintMain.setState(
+                R.id.constraintStatePortrait,
+                configuration.screenWidthDp,
+                configuration.screenHeightDp
+            )
     }
 
-    private fun handleReviewsUpdate(appData: AppData?) {
-        progressLoadingReviews.visibility = if (appData == null) VISIBLE else INVISIBLE
-        buttonPurchase.visibility = if (appData != null) VISIBLE else INVISIBLE
-        buttonExpand.visibility = if (appData != null) VISIBLE else INVISIBLE
-        appData?.let {
-            textProductName.text = it.title
-            textProductCompany.text = it.developer
-            textProductDescription.text = getDescriptionText(it)
-            reviewAdapter.onReviewsLoaded(it.reviews)
-        }
-    }
-
-    private fun getDescriptionText(appData: AppData?): String {
-        if (null != appData)
-            return if (viewModel.isDescriptionExpanded.value == true) appData.description else appData.shortDescription
-        else
-            return ""
-    }
-
-    private fun getSuggestedProducts() : Array<Suggestion> {
-        return arrayOf(Suggestion("Gregarious Grogglestock", R.drawable.gregarious),
-            Suggestion("Byzantium Barnacles", R.drawable.byzantium),
-            Suggestion("Cratankerous Cribblewelps", R.drawable.cratankerous),
-            Suggestion("Sunsaritous", R.drawable.sunsari),
-            Suggestion("Squiggalia Scrumptiae", R.drawable.squiggle),
-            Suggestion("Tenachaterous Torna", R.drawable.tenacious),
-            Suggestion("Venemial Venorae", R.drawable.venemial))
-    }
-
-    private fun toggleExpandButton() {
-        //Invert isDescriptionExpanded
-        viewModel.setDescriptionExpanded(viewModel.isDescriptionExpanded.value == false)
+    private fun updateControlVisibility(showControls: Boolean) {
+        progressLoadingReviews.isVisible = !showControls
+        buttonPurchase.isVisible = showControls
+        buttonExpand.isVisible = showControls
     }
 }
