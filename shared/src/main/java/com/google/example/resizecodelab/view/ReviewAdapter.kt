@@ -18,8 +18,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.google.example.resizecodelab.R
 import com.google.example.resizecodelab.data.Review
+import com.google.example.resizecodelab.shared.R
 
 class ReviewAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder>() {
 

@@ -136,6 +136,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.showControls.observe(this, NullFilteringObserver(::updateControlVisibility))
 
         viewModel.expandButtonTextResId.observe(this, NullFilteringObserver<Int> { resId ->
+            // noinspection ResourceType
             buttonExpand.text = getString(resId)
         })
 

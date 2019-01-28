@@ -18,7 +18,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.google.example.resizecodelab.R
+import com.google.example.resizecodelab.shared.R
 import java.util.concurrent.TimeUnit
 
 /**

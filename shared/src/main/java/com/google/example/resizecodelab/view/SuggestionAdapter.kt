@@ -19,8 +19,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.google.example.resizecodelab.R
 import com.google.example.resizecodelab.data.Suggestion
+import com.google.example.resizecodelab.shared.R
 
 class SuggestionAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<SuggestionAdapter.SuggestionViewHolder>() {
 
