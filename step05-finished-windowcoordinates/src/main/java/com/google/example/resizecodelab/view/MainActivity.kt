@@ -1,17 +1,18 @@
-/*      Copyright 2018 Google LLC
-
-        Licensed under the Apache License, Version 2.0 (the "License");
-        you may not use this file except in compliance with the License.
-        You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-        Unless required by applicable law or agreed to in writing, software
-        distributed under the License is distributed on an "AS IS" BASIS,
-        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-        See the License for the specific language governing permissions and
-        limitations under the License.
-*/
+/*
+ * Copyright 2019 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.google.example.resizecodelab.view
 
 import android.content.res.Configuration
@@ -32,7 +33,6 @@ import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.example.resizecodelab.R
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main_shell.*
@@ -49,73 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         //Set up constraint layout animations
         constraintMain.loadLayoutDescription(R.xml.constraint_states)
-        constraintMain.setOnConstraintsChanged(object : ConstraintsChangedListener() {
-            private val changeBounds = ChangeBounds().apply {
-                duration = 600
-                interpolator = AnticipateOvershootInterpolator(0.2f)
-            }
-
-            override fun preLayoutChange(state: Int, layoutId: Int) {
-                TransitionManager.beginDelayedTransition(constraintMain, changeBounds)
-
-                when (layoutId) {
-                    R.layout.activity_main -> {
-                        val reviewLayoutManager = LinearLayoutManager(
-                            baseContext,
-                            RecyclerView.VERTICAL,
-                            false
-                        )
-                        recyclerReviews.layoutManager = reviewLayoutManager
-
-                        val suggestionLayoutManager = LinearLayoutManager(
-                            baseContext,
-                            LinearLayoutManager.HORIZONTAL,
-                            false
-                        )
-                        recyclerSuggested.layoutManager = suggestionLayoutManager
-                    }
-
-                    R.layout.activity_main_land -> {
-                        val reviewLayoutManager = GridLayoutManager(baseContext, 2)
-                        recyclerReviews.layoutManager = reviewLayoutManager
-
-                        val suggestionLayoutManager = LinearLayoutManager(
-                            baseContext,
-                            LinearLayoutManager.HORIZONTAL,
-                            false
-                        )
-                        recyclerSuggested.layoutManager = suggestionLayoutManager
-                    }
-
-                    R.layout.activity_main_w400 -> {
-                        val reviewLayoutManager = LinearLayoutManager(
-                            baseContext,
-                            RecyclerView.VERTICAL,
-                            false
-                        )
-                        recyclerReviews.layoutManager = reviewLayoutManager
-
-                        val suggestionLayoutManager = GridLayoutManager(baseContext, 2)
-                        recyclerSuggested.layoutManager = suggestionLayoutManager
-                    }
-
-                    R.layout.activity_main_w600_land -> {
-                        val reviewLayoutManager = GridLayoutManager(baseContext, 2)
-                        recyclerReviews.layoutManager = reviewLayoutManager
-
-                        val suggestionLayoutManager = GridLayoutManager(baseContext, 3)
-                        recyclerSuggested.layoutManager = suggestionLayoutManager
-                    }
-                }
-            }
-
-            override fun postLayoutChange(stateId: Int, layoutId: Int) {
-                //Request all layout elements be redrawn
-                constraintMain.requestLayout()
-                //Visibility is part of constraint set, so rebinding is necessary
-                viewModel.showControls.value?.let { updateControlVisibility(it) }
-            }
-        })
+        constraintMain.setOnConstraintsChanged(createConstraintsChangedListener())
 
         //Retrieve the ViewModel with state data
         viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
@@ -136,7 +70,6 @@ class MainActivity : AppCompatActivity() {
         viewModel.showControls.observe(this, NullFilteringObserver(::updateControlVisibility))
 
         viewModel.expandButtonTextResId.observe(this, NullFilteringObserver<Int> { resId ->
-            // noinspection ResourceType
             buttonExpand.text = getString(resId)
         })
 
@@ -147,41 +80,7 @@ class MainActivity : AppCompatActivity() {
         //Expand/collapse button for product description
         buttonExpand.setOnClickListener { viewModel.toggleDescriptionExpanded() }
 
-        buttonPurchase.setOnClickListener {
-            val textPopupMessage = TextView(this)
-            textPopupMessage.gravity = Gravity.CENTER
-            textPopupMessage.text = getString(R.string.popup_purchase)
-            TextViewCompat.setTextAppearance(textPopupMessage, R.style.TextAppearance_AppCompat_Title)
-
-            val layoutParams = FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                Gravity.CENTER
-            )
-            val framePopup = FrameLayout(this)
-            framePopup.layoutParams = layoutParams
-            framePopup.setBackgroundColor(ContextCompat.getColor(this, android.R.color.white))
-
-            framePopup.addView(textPopupMessage)
-
-            //Get window size
-            val displayMetrics = resources.displayMetrics
-            val screenWidthPx = displayMetrics.widthPixels
-            val screenHeightPx = displayMetrics.heightPixels
-
-            //Popup should be 50% of window size
-            val popupWidthPx = screenWidthPx / 2
-            val popupHeightPx = screenHeightPx / 2
-
-            //Place it in the middle of the window
-            val popupX = (screenWidthPx / 2) - (popupWidthPx / 2)
-            val popupY = (screenHeightPx / 2) - (popupHeightPx / 2)
-
-            //Show the window
-            val popupWindow = PopupWindow(framePopup, popupWidthPx, popupHeightPx, true)
-            popupWindow.elevation = 10f
-            popupWindow.showAtLocation(scrollMain, Gravity.NO_GRAVITY, popupX, popupY)
-        }
+        buttonPurchase.setOnClickListener { showPurchaseDialog() }
 
         //On first load, make sure we are showing the correct layout
         configurationUpdate(resources.configuration)
@@ -195,6 +94,86 @@ class MainActivity : AppCompatActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         configurationUpdate(newConfig)
+    }
+
+    private fun createConstraintsChangedListener(): ConstraintsChangedListener {
+        return object : ConstraintsChangedListener() {
+            private val changeBounds = ChangeBounds().apply {
+                duration = 600
+                interpolator = AnticipateOvershootInterpolator(0.2f)
+            }
+
+            override fun preLayoutChange(state: Int, layoutId: Int) {
+                TransitionManager.beginDelayedTransition(constraintMain, changeBounds)
+
+                when (layoutId) {
+                    R.layout.activity_main -> {
+                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
+                        recyclerSuggested.layoutManager =
+                            LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+                    }
+
+                    R.layout.activity_main_land -> {
+                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
+                        recyclerSuggested.layoutManager =
+                            LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+                    }
+
+                    R.layout.activity_main_w400 -> {
+                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
+                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 2)
+                    }
+
+                    R.layout.activity_main_w600_land -> {
+                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
+                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 3)
+                    }
+                }
+            }
+
+            override fun postLayoutChange(stateId: Int, layoutId: Int) {
+                //Request all layout elements be redrawn
+                constraintMain.requestLayout()
+                //Visibility is part of constraint set, so rebinding is necessary
+                viewModel.showControls.value?.let { updateControlVisibility(it) }
+            }
+        }
+    }
+
+    private fun showPurchaseDialog() {
+        val textPopupMessage = TextView(this)
+        textPopupMessage.gravity = Gravity.CENTER
+        textPopupMessage.text = getString(R.string.popup_purchase)
+        TextViewCompat.setTextAppearance(textPopupMessage, R.style.TextAppearance_AppCompat_Title)
+
+        val layoutParams = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            Gravity.CENTER
+        )
+        val framePopup = FrameLayout(this)
+        framePopup.layoutParams = layoutParams
+        framePopup.setBackgroundColor(ContextCompat.getColor(this, android.R.color.white))
+
+        framePopup.addView(textPopupMessage)
+
+        //Get window size
+        val displayMetrics = resources.displayMetrics
+        val screenWidthPx = displayMetrics.widthPixels
+        val screenHeightPx = displayMetrics.heightPixels
+
+        //Popup should be 50% of window size
+        val popupWidthPx = screenWidthPx / 2
+        val popupHeightPx = screenHeightPx / 2
+
+        //Place it in the middle of the window
+        val popupX = (screenWidthPx / 2) - (popupWidthPx / 2)
+        val popupY = (screenHeightPx / 2) - (popupHeightPx / 2)
+
+        //Show the window
+        val popupWindow = PopupWindow(framePopup, popupWidthPx, popupHeightPx, true)
+        popupWindow.elevation = 10f
+        popupWindow.showAtLocation(scrollMain, Gravity.NO_GRAVITY, popupX, popupY)
     }
 
     private fun configurationUpdate(configuration: Configuration) {
