@@ -50,8 +50,12 @@ class MainActivity : AppCompatActivity() {
         constraintMain.loadLayoutDescription(R.xml.constraint_states)
         constraintMain.setOnConstraintsChanged(createConstraintsChangedListener())
 
+        // Normally you would receive this as an argument to this Activity.
+        val dataId = 1
+
         //Retrieve the ViewModel with state data
-        viewModel = ViewModelProviders.of(this, SavedStateVMFactory(this)).get(MainViewModel::class.java)
+        viewModel = ViewModelProviders.of(this, SavedStateVMFactory(this, Bundle().apply { putInt(KEY_ID, dataId) }))
+            .get(MainViewModel::class.java)
 
         //Set up recycler view for reviews
         val reviewAdapter = ReviewAdapter()

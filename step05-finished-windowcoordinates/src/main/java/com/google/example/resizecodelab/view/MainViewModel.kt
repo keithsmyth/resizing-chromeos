@@ -20,6 +20,7 @@ import com.google.example.resizecodelab.R
 import com.google.example.resizecodelab.data.DataProvider
 import com.google.example.resizecodelab.data.Review
 
+internal const val KEY_ID = "KEY_ID"
 private const val KEY_EXPANDED = "KEY_EXPANDED"
 
 /**
@@ -30,9 +31,9 @@ class MainViewModel(private val state: SavedStateHandle) : ViewModel() {
 
     private val dataProvider = DataProvider()
 
-    private val appData = dataProvider.fetchData()
+    private val appData = dataProvider.fetchData(getIdState())
 
-    val suggestions = dataProvider.fetchSuggestions()
+    val suggestions = dataProvider.fetchSuggestions(getIdState())
 
     val showControls: LiveData<Boolean> = Transformations.map(appData) { it != null }
 
@@ -64,7 +65,7 @@ class MainViewModel(private val state: SavedStateHandle) : ViewModel() {
      * Handle toggle button presses
      */
     fun toggleDescriptionExpanded() {
-        state.set(KEY_EXPANDED, state.get<Boolean>(KEY_EXPANDED) != true)
+        state.set(KEY_EXPANDED, !getExpandedState())
     }
 
     private fun determineDescriptionText(): String? {
@@ -75,5 +76,13 @@ class MainViewModel(private val state: SavedStateHandle) : ViewModel() {
                 appData.shortDescription
             }
         }
+    }
+
+    private fun getIdState(): Int {
+        return state.get(KEY_ID) ?: throw IllegalStateException("MainViewModel must be called with an Id to fetch data")
+    }
+
+    private fun getExpandedState(): Boolean {
+        return state.get(KEY_EXPANDED) ?: false
     }
 }
