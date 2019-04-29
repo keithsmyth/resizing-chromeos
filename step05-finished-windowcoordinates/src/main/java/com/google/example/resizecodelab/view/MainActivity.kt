@@ -30,14 +30,13 @@ import androidx.constraintlayout.widget.ConstraintsChangedListener
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
+import androidx.lifecycle.SavedStateVMFactory
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.example.resizecodelab.R
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main_shell.*
-
-private const val KEY_EXPANDED = "KEY_EXPANDED"
 
 class MainActivity : AppCompatActivity() {
 
@@ -52,10 +51,7 @@ class MainActivity : AppCompatActivity() {
         constraintMain.setOnConstraintsChanged(createConstraintsChangedListener())
 
         //Retrieve the ViewModel with state data
-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-
-        //Restore savedInstanceState variables
-        savedInstanceState?.getBoolean(KEY_EXPANDED)?.let(viewModel::restoreDescriptionExpanded)
+        viewModel = ViewModelProviders.of(this, SavedStateVMFactory(this)).get(MainViewModel::class.java)
 
         //Set up recycler view for reviews
         val reviewAdapter = ReviewAdapter()
@@ -84,11 +80,6 @@ class MainActivity : AppCompatActivity() {
 
         //On first load, make sure we are showing the correct layout
         configurationUpdate(resources.configuration)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        viewModel.isDescriptionExpanded.value?.let { (outState.putBoolean(KEY_EXPANDED, it)) }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

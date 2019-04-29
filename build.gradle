@@ -28,6 +28,7 @@ buildscript {
         lifecycleVersion = "2.0.0"
         legacySupportVersion = "1.0.0"
         coreKtxVersion = "1.0.1"
+        lifecycleViewModelVersion = "1.0.0-alpha01"
     }
     repositories {
         google()
