@@ -17,26 +17,22 @@ package com.google.example.resizecodelab.view
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.transition.ChangeBounds
-import android.transition.TransitionManager
 import android.view.Gravity
 import android.view.ViewGroup
-import android.view.animation.AnticipateOvershootInterpolator
 import android.widget.FrameLayout
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintsChangedListener
+import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.constraintlayout.motion.widget.TransitionAdapter
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.SavedStateVMFactory
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.example.resizecodelab.R
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main_shell.*
+import kotlinx.android.synthetic.main.activity_main_new.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,11 +40,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main_shell)
+        setContentView(R.layout.activity_main_new)
 
-        //Set up constraint layout animations
-        constraintMain.loadLayoutDescription(R.xml.constraint_states)
-        constraintMain.setOnConstraintsChanged(createConstraintsChangedListener())
+        //Set up RecyclerView's on transition
+        motionMain.setTransitionListener(createTransitionListener())
 
         // Normally you would receive this as an argument to this Activity.
         val dataId = 1
@@ -91,49 +86,63 @@ class MainActivity : AppCompatActivity() {
         configurationUpdate(newConfig)
     }
 
-    private fun createConstraintsChangedListener(): ConstraintsChangedListener {
-        return object : ConstraintsChangedListener() {
-            private val changeBounds = ChangeBounds().apply {
-                duration = 600
-                interpolator = AnticipateOvershootInterpolator(0.2f)
-            }
-
-            override fun preLayoutChange(state: Int, layoutId: Int) {
-                TransitionManager.beginDelayedTransition(constraintMain, changeBounds)
-
-                when (layoutId) {
-                    R.layout.activity_main -> {
+    private fun createTransitionListener(): MotionLayout.TransitionListener {
+        return object : TransitionAdapter() {
+            override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
+                when (currentId) {
+                    R.id.constraint_set_main -> {
                         recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
                         recyclerSuggested.layoutManager =
                             LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-                    }
-
-                    R.layout.activity_main_land -> {
-                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
-                        recyclerSuggested.layoutManager =
-                            LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-                    }
-
-                    R.layout.activity_main_w400 -> {
-                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
-                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 2)
-                    }
-
-                    R.layout.activity_main_w600_land -> {
-                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
-                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 3)
                     }
                 }
             }
-
-            override fun postLayoutChange(stateId: Int, layoutId: Int) {
-                //Request all layout elements be redrawn
-                constraintMain.requestLayout()
-                //Visibility is part of constraint set, so rebinding is necessary
-                viewModel.showControls.value?.let { updateControlVisibility(it) }
-            }
         }
     }
+
+//    private fun createConstraintsChangedListener(): ConstraintsChangedListener {
+//        return object : ConstraintsChangedListener() {
+//            private val changeBounds = ChangeBounds().apply {
+//                duration = 600
+//                interpolator = AnticipateOvershootInterpolator(0.2f)
+//            }
+//
+//            override fun preLayoutChange(state: Int, layoutId: Int) {
+//                TransitionManager.beginDelayedTransition(constraintMain, changeBounds)
+//
+//                when (layoutId) {
+//                    R.layout.activity_main -> {
+//                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
+//                        recyclerSuggested.layoutManager =
+//                            LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+//                    }
+//
+//                    R.layout.activity_main_land -> {
+//                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
+//                        recyclerSuggested.layoutManager =
+//                            LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+//                    }
+//
+//                    R.layout.activity_main_w400 -> {
+//                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
+//                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 2)
+//                    }
+//
+//                    R.layout.activity_main_w600_land -> {
+//                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
+//                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 3)
+//                    }
+//                }
+//            }
+//
+//            override fun postLayoutChange(stateId: Int, layoutId: Int) {
+//                //Request all layout elements be redrawn
+//                constraintMain.requestLayout()
+//                //Visibility is part of constraint set, so rebinding is necessary
+//                viewModel.showControls.value?.let { updateControlVisibility(it) }
+//            }
+//        }
+//    }
 
     private fun showPurchaseDialog() {
         val textPopupMessage = TextView(this)
@@ -171,19 +180,16 @@ class MainActivity : AppCompatActivity() {
         popupWindow.showAtLocation(scrollMain, Gravity.NO_GRAVITY, popupX, popupY)
     }
 
-    private fun configurationUpdate(configuration: Configuration) {
-        if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
-            constraintMain.setState(
-                R.id.constraintStateLandscape,
-                configuration.screenWidthDp,
-                configuration.screenHeightDp
-            )
-        else
-            constraintMain.setState(
-                R.id.constraintStatePortrait,
-                configuration.screenWidthDp,
-                configuration.screenHeightDp
-            )
+    private fun configurationUpdate(config: Configuration) {
+//        val constraintSetResId = when {
+//            (config.screenWidthDp >= 600 &&
+//                    config.orientation == Configuration.ORIENTATION_LANDSCAPE) -> R.id.constraint_set_w600_land
+//            (config.screenWidthDp >= 400) ->  R.id.constraint_set_w400
+//            (config.orientation == Configuration.ORIENTATION_LANDSCAPE) -> R.id.constraint_set_land
+//            else -> R.id.constraint_set_main
+//        }
+
+        motionMain.transitionToState(R.id.constraint_set_main) //constraintSetResId
     }
 
     private fun updateControlVisibility(showControls: Boolean) {
