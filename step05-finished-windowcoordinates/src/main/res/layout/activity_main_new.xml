@@ -20,6 +20,9 @@
     android:id="@+id/scrollMain"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingStart="16dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="16dp"
     android:descendantFocusability="blocksDescendants"
     app:layoutDescription="@xml/scene_main">
 
@@ -41,8 +44,6 @@
             android:id="@+id/imageProduct"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
             android:adjustViewBounds="true"
             android:contentDescription="@string/access_product_image"
             android:scaleType="fitCenter"
@@ -55,7 +56,6 @@
             android:id="@+id/progressLoadingReviews"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -64,10 +64,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            app:layout_constraintEnd_toStartOf="@id/progressLoadingReviews"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imageProduct"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/label_product_name" />
@@ -78,9 +76,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            app:layout_constraintEnd_toStartOf="@id/progressLoadingReviews"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imageProduct"
             app:layout_constraintTop_toBottomOf="@id/textProductName"
             tools:text="@string/label_product_company" />
@@ -91,13 +88,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
+            android:layout_marginStart="4dp"
             android:text="@string/button_purchase"
             app:layout_constraintBottom_toBottomOf="@id/imageProduct"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/textProductCompany"
+            app:layout_constraintStart_toStartOf="@id/guidelineImage"
             app:layout_constraintTop_toBottomOf="@id/textProductCompany" />
 
         <TextView
@@ -133,7 +128,6 @@
             android:id="@+id/recyclerReviews"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/barrierHorizontal" />

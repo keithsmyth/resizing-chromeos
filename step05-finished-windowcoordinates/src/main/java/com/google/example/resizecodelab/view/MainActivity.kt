@@ -100,50 +100,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    private fun createConstraintsChangedListener(): ConstraintsChangedListener {
-//        return object : ConstraintsChangedListener() {
-//            private val changeBounds = ChangeBounds().apply {
-//                duration = 600
-//                interpolator = AnticipateOvershootInterpolator(0.2f)
-//            }
-//
-//            override fun preLayoutChange(state: Int, layoutId: Int) {
-//                TransitionManager.beginDelayedTransition(constraintMain, changeBounds)
-//
-//                when (layoutId) {
-//                    R.layout.activity_main -> {
-//                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
-//                        recyclerSuggested.layoutManager =
-//                            LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-//                    }
-//
-//                    R.layout.activity_main_land -> {
-//                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
-//                        recyclerSuggested.layoutManager =
-//                            LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-//                    }
-//
-//                    R.layout.activity_main_w400 -> {
-//                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
-//                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 2)
-//                    }
-//
-//                    R.layout.activity_main_w600_land -> {
-//                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
-//                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 3)
-//                    }
-//                }
-//            }
-//
-//            override fun postLayoutChange(stateId: Int, layoutId: Int) {
-//                //Request all layout elements be redrawn
-//                constraintMain.requestLayout()
-//                //Visibility is part of constraint set, so rebinding is necessary
-//                viewModel.showControls.value?.let { updateControlVisibility(it) }
-//            }
-//        }
-//    }
-
     private fun showPurchaseDialog() {
         val textPopupMessage = TextView(this)
         textPopupMessage.gravity = Gravity.CENTER
