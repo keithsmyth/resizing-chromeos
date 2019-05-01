@@ -19,7 +19,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/scrollMain"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:paddingStart="16dp"
     android:paddingTop="16dp"
     android:paddingEnd="16dp"
@@ -34,11 +34,18 @@
         app:layoutDescription="@xml/scene_main">
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guidelineImage"
+            android:id="@+id/guideline_left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.4" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="1" />
 
         <ImageView
             android:id="@+id/imageProduct"
@@ -47,7 +54,7 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/access_product_image"
             android:scaleType="fitCenter"
-            app:layout_constraintEnd_toEndOf="@id/guidelineImage"
+            app:layout_constraintEnd_toEndOf="@id/guideline_left"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/whizzbuckling" />
@@ -56,7 +63,7 @@
             android:id="@+id/progressLoadingReviews"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_right"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -65,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_right"
             app:layout_constraintStart_toEndOf="@id/imageProduct"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/label_product_name" />
@@ -77,7 +84,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_right"
             app:layout_constraintStart_toEndOf="@id/imageProduct"
             app:layout_constraintTop_toBottomOf="@id/textProductName"
             tools:text="@string/label_product_company" />
@@ -91,18 +98,25 @@
             android:layout_marginStart="4dp"
             android:text="@string/button_purchase"
             app:layout_constraintBottom_toBottomOf="@id/imageProduct"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/guidelineImage"
+            app:layout_constraintEnd_toEndOf="@id/guideline_right"
+            app:layout_constraintStart_toStartOf="@id/guideline_left"
             app:layout_constraintTop_toBottomOf="@id/textProductCompany" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrierHorizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="buttonPurchase,imageProduct" />
 
         <TextView
             android:id="@+id/textProductDescription"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_right"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imageProduct"
+            app:layout_constraintTop_toBottomOf="@id/barrierHorizontal"
             tools:text="@tools:sample/lorem/random" />
 
         <Button
@@ -114,15 +128,8 @@
             android:text="@string/button_expand"
             android:textAllCaps="true"
             android:textColor="@color/colorAccent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_right"
             app:layout_constraintTop_toBottomOf="@id/textProductDescription" />
-
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/barrierHorizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="bottom"
-            app:constraint_referenced_ids="buttonExpand,imageProduct" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerReviews"
@@ -130,7 +137,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/barrierHorizontal" />
+            app:layout_constraintTop_toBottomOf="@+id/buttonExpand" />
 
         <TextView
             android:id="@+id/textSuggested"
@@ -140,6 +147,7 @@
             android:text="@string/label_suggested"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_right"
             app:layout_constraintTop_toBottomOf="@id/recyclerReviews" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -147,7 +155,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guideline_right"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textSuggested"
             tools:listitem="@layout/list_item_suggested" />

@@ -17,6 +17,7 @@ package com.google.example.resizecodelab.view
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -30,6 +31,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.SavedStateVMFactory
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.example.resizecodelab.R
 import kotlinx.android.synthetic.main.activity_main_new.*
@@ -90,10 +92,33 @@ class MainActivity : AppCompatActivity() {
         return object : TransitionAdapter() {
             override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
                 when (currentId) {
-                    R.id.constraint_set_main -> {
+                    R.id.constraint_set_default -> {
+                        Log.d("ResizeCodeLab", "onTransitionCompleted default")
                         recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
-                        recyclerSuggested.layoutManager =
-                            LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+                        recyclerSuggested.layoutManager = LinearLayoutManager(
+                            this@MainActivity,
+                            LinearLayoutManager.HORIZONTAL,
+                            false
+                        )
+                    }
+                    R.id.constraint_set_default_land -> {
+                        Log.d("ResizeCodeLab", "onTransitionCompleted default land")
+                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
+                        recyclerSuggested.layoutManager = LinearLayoutManager(
+                            this@MainActivity,
+                            LinearLayoutManager.HORIZONTAL,
+                            false
+                        )
+                    }
+                    R.id.constraint_set_large -> {
+                        Log.d("ResizeCodeLab", "onTransitionCompleted large")
+                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
+                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 2)
+                    }
+                    R.id.constraint_set_large_land -> {
+                        Log.d("ResizeCodeLab", "onTransitionCompleted large land")
+                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
+                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 3)
                     }
                 }
             }
@@ -137,15 +162,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun configurationUpdate(config: Configuration) {
-//        val constraintSetResId = when {
-//            (config.screenWidthDp >= 600 &&
-//                    config.orientation == Configuration.ORIENTATION_LANDSCAPE) -> R.id.constraint_set_w600_land
-//            (config.screenWidthDp >= 400) ->  R.id.constraint_set_w400
-//            (config.orientation == Configuration.ORIENTATION_LANDSCAPE) -> R.id.constraint_set_land
-//            else -> R.id.constraint_set_main
-//        }
-
-        motionMain.transitionToState(R.id.constraint_set_main) //constraintSetResId
+        Log.d("ResizeCodeLab", config.screenWidthDp.toString())
+        val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val constraintSetResId = when {
+            config.screenWidthDp >= 600 -> {
+                if (isLandscape) R.id.constraint_set_large_land else R.id.constraint_set_large
+            }
+            else -> {
+                if (isLandscape) R.id.constraint_set_default_land else R.id.constraint_set_default
+            }
+        }
+        motionMain.transitionToState(constraintSetResId)
     }
 
     private fun updateControlVisibility(showControls: Boolean) {
