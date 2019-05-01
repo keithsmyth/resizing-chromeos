@@ -30,19 +30,21 @@
         android:paddingTop="16dp"
         android:paddingEnd="16dp">
 
+        <!--20% of screen width-->
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/left_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.4" />
+            app:layout_constraintGuide_percent="0.2" />
 
+        <!--Start at 45% screen width-->
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/right_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="1" />
+            app:layout_constraintGuide_percent="0.45" />
 
         <ImageView
             android:id="@+id/product_image_view"
@@ -86,34 +88,36 @@
             app:layout_constraintTop_toBottomOf="@id/product_name_text_view"
             tools:text="@string/label_product_company" />
 
+        <!--Directly below Company-->
         <Button
             android:id="@+id/purchase_button"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
             android:text="@string/button_purchase"
-            app:layout_constraintBottom_toBottomOf="@id/product_image_view"
             app:layout_constraintEnd_toEndOf="@id/right_guideline"
             app:layout_constraintStart_toStartOf="@id/left_guideline"
             app:layout_constraintTop_toBottomOf="@id/product_company_text_view" />
 
+        <!--Expand button and Image-->
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/horizontal_barrier"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:barrierDirection="bottom"
-            app:constraint_referenced_ids="purchase_button,product_image_view" />
+            app:constraint_referenced_ids="expand_description_button, product_image_view" />
 
+        <!--Below the Purchase Button-->
         <TextView
             android:id="@+id/product_description_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
             app:layout_constraintEnd_toEndOf="@id/right_guideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
+            app:layout_constraintStart_toStartOf="@id/left_guideline"
+            app:layout_constraintTop_toBottomOf="@id/purchase_button"
             tools:text="@tools:sample/lorem/random" />
 
         <Button
@@ -128,14 +132,16 @@
             app:layout_constraintEnd_toEndOf="@id/right_guideline"
             app:layout_constraintTop_toBottomOf="@id/product_description_text_view" />
 
+        <!--Starts at top, guideline right-->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/reviews_recycler_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/expand_description_button" />
+            app:layout_constraintStart_toStartOf="@id/right_guideline"
+            app:layout_constraintTop_toTopOf="parent" />
 
+        <!--Below the Barrier, end at guideline right-->
         <TextView
             android:id="@+id/suggested_text_view"
             android:layout_width="0dp"
@@ -143,10 +149,11 @@
             android:layout_margin="16dp"
             android:text="@string/label_suggested"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="@id/right_guideline"
-            app:layout_constraintTop_toBottomOf="@id/reviews_recycler_view" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/horizontal_barrier" />
 
+        <!--End at guideline right-->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/suggested_recycler_view"
             android:layout_width="0dp"

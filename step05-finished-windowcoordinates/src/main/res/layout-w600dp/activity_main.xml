@@ -17,110 +17,109 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/scrollMain"
+    android:id="@+id/main_nested_scroll"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingStart="16dp"
-    android:paddingTop="16dp"
-    android:paddingEnd="16dp"
-    android:descendantFocusability="blocksDescendants"
-    app:layoutDescription="@xml/scene_main">
+    android:layout_height="match_parent">
 
-    <androidx.constraintlayout.motion.widget.MotionLayout
-        android:id="@+id/motionMain"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main_constraint_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:descendantFocusability="blocksDescendants"
-        app:layoutDescription="@xml/scene_main">
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp">
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_left"
+            android:id="@+id/left_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.4" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_right"
+            android:id="@+id/right_guideline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="1" />
 
         <ImageView
-            android:id="@+id/imageProduct"
+            android:id="@+id/product_image_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:contentDescription="@string/access_product_image"
             android:scaleType="fitCenter"
-            app:layout_constraintEnd_toEndOf="@id/guideline_left"
+            app:layout_constraintEnd_toEndOf="@id/left_guideline"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/whizzbuckling" />
 
         <ProgressBar
-            android:id="@+id/progressLoadingReviews"
+            android:id="@+id/loading_progress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="@id/guideline_right"
+            app:layout_constraintEnd_toEndOf="@id/right_guideline"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/textProductName"
+            android:id="@+id/product_name_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            app:layout_constraintEnd_toEndOf="@id/guideline_right"
-            app:layout_constraintStart_toEndOf="@id/imageProduct"
+            app:layout_constraintEnd_toEndOf="@id/right_guideline"
+            app:layout_constraintStart_toEndOf="@id/product_image_view"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/label_product_name" />
 
         <TextView
-            android:id="@+id/textProductCompany"
+            android:id="@+id/product_company_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            app:layout_constraintEnd_toEndOf="@id/guideline_right"
-            app:layout_constraintStart_toEndOf="@id/imageProduct"
-            app:layout_constraintTop_toBottomOf="@id/textProductName"
+            app:layout_constraintEnd_toEndOf="@id/right_guideline"
+            app:layout_constraintStart_toEndOf="@id/product_image_view"
+            app:layout_constraintTop_toBottomOf="@id/product_name_text_view"
             tools:text="@string/label_product_company" />
 
+        <!--Directly below Company-->
         <Button
-            android:id="@+id/buttonPurchase"
+            android:id="@+id/purchase_button"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
             android:text="@string/button_purchase"
-            app:layout_constraintBottom_toBottomOf="@id/imageProduct"
-            app:layout_constraintEnd_toEndOf="@id/guideline_right"
-            app:layout_constraintStart_toStartOf="@id/guideline_left"
-            app:layout_constraintTop_toBottomOf="@id/textProductCompany" />
+            app:layout_constraintEnd_toEndOf="@id/right_guideline"
+            app:layout_constraintStart_toStartOf="@id/left_guideline"
+            app:layout_constraintTop_toBottomOf="@id/product_company_text_view" />
 
+        <!--Expand button and Image-->
         <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/barrierHorizontal"
+            android:id="@+id/horizontal_barrier"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:barrierDirection="bottom"
-            app:constraint_referenced_ids="buttonPurchase,imageProduct" />
+            app:constraint_referenced_ids="expand_description_button, product_image_view" />
 
+        <!--Below the Purchase Button-->
         <TextView
-            android:id="@+id/textProductDescription"
+            android:id="@+id/product_description_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            app:layout_constraintEnd_toEndOf="@id/guideline_right"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/barrierHorizontal"
+            app:layout_constraintEnd_toEndOf="@id/right_guideline"
+            app:layout_constraintStart_toStartOf="@id/left_guideline"
+            app:layout_constraintTop_toBottomOf="@id/purchase_button"
             tools:text="@tools:sample/lorem/random" />
 
         <Button
-            android:id="@+id/buttonExpand"
+            android:id="@+id/expand_description_button"
             style="@style/Widget.AppCompat.ActionButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -128,38 +127,41 @@
             android:text="@string/button_expand"
             android:textAllCaps="true"
             android:textColor="@color/colorAccent"
-            app:layout_constraintEnd_toEndOf="@id/guideline_right"
-            app:layout_constraintTop_toBottomOf="@id/textProductDescription" />
+            app:layout_constraintEnd_toEndOf="@id/right_guideline"
+            app:layout_constraintTop_toBottomOf="@id/product_description_text_view" />
 
+        <!--Starts at Image end-->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerReviews"
+            android:id="@+id/reviews_recycler_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonExpand" />
+            app:layout_constraintStart_toStartOf="@id/left_guideline"
+            app:layout_constraintTop_toBottomOf="@+id/horizontal_barrier" />
 
+        <!--Below the Barrier, end at guideline left-->
         <TextView
-            android:id="@+id/textSuggested"
+            android:id="@+id/suggested_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:text="@string/label_suggested"
             android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            app:layout_constraintEnd_toEndOf="@id/left_guideline"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="@id/guideline_right"
-            app:layout_constraintTop_toBottomOf="@id/recyclerReviews" />
+            app:layout_constraintTop_toBottomOf="@id/horizontal_barrier" />
 
+        <!--End at guideline left-->
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerSuggested"
+            android:id="@+id/suggested_recycler_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            app:layout_constraintEnd_toEndOf="@id/guideline_right"
+            app:layout_constraintEnd_toEndOf="@id/left_guideline"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/textSuggested"
+            app:layout_constraintTop_toBottomOf="@id/suggested_text_view"
             tools:listitem="@layout/list_item_suggested" />
 
-    </androidx.constraintlayout.motion.widget.MotionLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.core.widget.NestedScrollView>

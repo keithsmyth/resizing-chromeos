@@ -17,35 +17,32 @@ package com.google.example.resizecodelab.view
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.util.Log
 import android.view.Gravity
 import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.PopupWindow
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.motion.widget.MotionLayout
-import androidx.constraintlayout.motion.widget.TransitionAdapter
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.SavedStateVMFactory
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.example.resizecodelab.R
-import kotlinx.android.synthetic.main.activity_main_new.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel: MainViewModel
+    private lateinit var mainNestedScrollView: NestedScrollView
+    private lateinit var loadingProgress: ProgressBar
+    private lateinit var purchaseButton: Button
+    private lateinit var expandDescriptionButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main_new)
-
-        //Set up RecyclerView's on transition
-        motionMain.setTransitionListener(createTransitionListener())
+        setContentView(R.layout.activity_main)
 
         // Normally you would receive this as an argument to this Activity.
         val dataId = 1
@@ -54,75 +51,51 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this, SavedStateVMFactory(this, Bundle().apply { putInt(KEY_ID, dataId) }))
             .get(MainViewModel::class.java)
 
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isSmall = resources.configuration.screenWidthDp < 600
+
         //Set up recycler view for reviews
+        val reviewsRecyclerView: RecyclerView = findViewById(R.id.reviews_recycler_view)
+        reviewsRecyclerView.layoutManager = if (isLandscape) {
+            GridLayoutManager(this, 2)
+        } else {
+            LinearLayoutManager(this)
+        }
         val reviewAdapter = ReviewAdapter()
-        recyclerReviews.adapter = reviewAdapter
         viewModel.reviews.observe(this, NullFilteringObserver(reviewAdapter::onReviewsLoaded))
+        reviewsRecyclerView.adapter = reviewAdapter
 
         //Set up recycler view for suggested products
+        val suggestedRecyclerView: RecyclerView = findViewById(R.id.suggested_recycler_view)
+        suggestedRecyclerView.layoutManager = when {
+            isSmall -> LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            isLandscape -> GridLayoutManager(this, 3)
+            else -> GridLayoutManager(this, 2)
+        }
         val suggestionAdapter = SuggestionAdapter()
-        recyclerSuggested.adapter = suggestionAdapter
         viewModel.suggestions.observe(this, NullFilteringObserver(suggestionAdapter::updateSuggestions))
+        suggestedRecyclerView.adapter = suggestionAdapter
 
+        loadingProgress = findViewById(R.id.loading_progress)
+        purchaseButton = findViewById(R.id.purchase_button)
+        expandDescriptionButton = findViewById(R.id.expand_description_button)
         viewModel.showControls.observe(this, NullFilteringObserver(::updateControlVisibility))
 
         viewModel.expandButtonTextResId.observe(this, NullFilteringObserver<Int> { resId ->
-            buttonExpand.text = getString(resId)
+            expandDescriptionButton.text = getString(resId)
         })
 
-        viewModel.productName.observe(this, NullFilteringObserver(textProductName::setText))
-        viewModel.productCompany.observe(this, NullFilteringObserver(textProductCompany::setText))
-        viewModel.descriptionText.observe(this, NullFilteringObserver(textProductDescription::setText))
+        val productNameTextView: TextView = findViewById(R.id.product_name_text_view)
+        viewModel.productName.observe(this, NullFilteringObserver(productNameTextView::setText))
+        val productCompanyTextView: TextView = findViewById(R.id.product_company_text_view)
+        viewModel.productCompany.observe(this, NullFilteringObserver(productCompanyTextView::setText))
+        val productDescriptionTextView: TextView = findViewById(R.id.product_description_text_view)
+        viewModel.descriptionText.observe(this, NullFilteringObserver(productDescriptionTextView::setText))
 
         //Expand/collapse button for product description
-        buttonExpand.setOnClickListener { viewModel.toggleDescriptionExpanded() }
+        expandDescriptionButton.setOnClickListener { viewModel.toggleDescriptionExpanded() }
 
-        buttonPurchase.setOnClickListener { showPurchaseDialog() }
-
-        //On first load, make sure we are showing the correct layout
-        configurationUpdate(resources.configuration)
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        configurationUpdate(newConfig)
-    }
-
-    private fun createTransitionListener(): MotionLayout.TransitionListener {
-        return object : TransitionAdapter() {
-            override fun onTransitionCompleted(motionLayout: MotionLayout?, currentId: Int) {
-                when (currentId) {
-                    R.id.constraint_set_default -> {
-                        Log.d("ResizeCodeLab", "onTransitionCompleted default")
-                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
-                        recyclerSuggested.layoutManager = LinearLayoutManager(
-                            this@MainActivity,
-                            LinearLayoutManager.HORIZONTAL,
-                            false
-                        )
-                    }
-                    R.id.constraint_set_default_land -> {
-                        Log.d("ResizeCodeLab", "onTransitionCompleted default land")
-                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
-                        recyclerSuggested.layoutManager = LinearLayoutManager(
-                            this@MainActivity,
-                            LinearLayoutManager.HORIZONTAL,
-                            false
-                        )
-                    }
-                    R.id.constraint_set_large -> {
-                        Log.d("ResizeCodeLab", "onTransitionCompleted large")
-                        recyclerReviews.layoutManager = LinearLayoutManager(this@MainActivity)
-                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 2)
-                    }
-                    R.id.constraint_set_large_land -> {
-                        Log.d("ResizeCodeLab", "onTransitionCompleted large land")
-                        recyclerReviews.layoutManager = GridLayoutManager(this@MainActivity, 2)
-                        recyclerSuggested.layoutManager = GridLayoutManager(this@MainActivity, 3)
-                    }
-                }
-            }
-        }
+        purchaseButton.setOnClickListener { showPurchaseDialog() }
     }
 
     private fun showPurchaseDialog() {
@@ -158,26 +131,12 @@ class MainActivity : AppCompatActivity() {
         //Show the window
         val popupWindow = PopupWindow(framePopup, popupWidthPx, popupHeightPx, true)
         popupWindow.elevation = 10f
-        popupWindow.showAtLocation(scrollMain, Gravity.NO_GRAVITY, popupX, popupY)
-    }
-
-    private fun configurationUpdate(config: Configuration) {
-        Log.d("ResizeCodeLab", config.screenWidthDp.toString())
-        val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val constraintSetResId = when {
-            config.screenWidthDp >= 600 -> {
-                if (isLandscape) R.id.constraint_set_large_land else R.id.constraint_set_large
-            }
-            else -> {
-                if (isLandscape) R.id.constraint_set_default_land else R.id.constraint_set_default
-            }
-        }
-        motionMain.transitionToState(constraintSetResId)
+        popupWindow.showAtLocation(mainNestedScrollView, Gravity.NO_GRAVITY, popupX, popupY)
     }
 
     private fun updateControlVisibility(showControls: Boolean) {
-        progressLoadingReviews.isVisible = !showControls
-        buttonPurchase.isVisible = showControls
-        buttonExpand.isVisible = showControls
+        loadingProgress.isVisible = !showControls
+        purchaseButton.isVisible = showControls
+        expandDescriptionButton.isVisible = showControls
     }
 }
