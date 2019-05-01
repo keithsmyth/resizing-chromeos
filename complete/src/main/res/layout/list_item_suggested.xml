@@ -15,15 +15,15 @@
   ~ limitations under the License.
   -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
-                                                   xmlns:tools="http://schemas.android.com/tools"
-                                                   android:layout_width="wrap_content"
-                                                   android:layout_height="wrap_content"
-                                                   android:layout_margin="16dp"
-                                                   android:background="#05000000">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:background="#05000000">
 
     <ImageView
-        android:id="@+id/imageSuggestedProduct"
+        android:id="@+id/suggested_product_image_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -40,7 +40,7 @@
         tools:ignore="ContentDescription" />
 
     <TextView
-        android:id="@+id/textSuggestedProductName"
+        android:id="@+id/suggested_product_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
@@ -48,7 +48,7 @@
         android:maxWidth="100dp"
         android:textAlignment="center"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageSuggestedProduct"
+        app:layout_constraintTop_toBottomOf="@+id/suggested_product_image_view"
         app:layout_constraintStart_toStartOf="parent"
         tools:text="Suggested Product Name" />
 

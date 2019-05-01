@@ -49,7 +49,7 @@ class SuggestionAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<Sugg
     }
 
     class SuggestionViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
-        val name: TextView = itemView.findViewById(R.id.textSuggestedProductName)
-        val image: ImageView = itemView.findViewById(R.id.imageSuggestedProduct)
+        val name: TextView = itemView.findViewById(R.id.suggested_product_text_view)
+        val image: ImageView = itemView.findViewById(R.id.suggested_product_image_view)
     }
 }

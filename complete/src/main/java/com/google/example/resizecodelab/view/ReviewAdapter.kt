@@ -48,7 +48,7 @@ class ReviewAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<ReviewAd
     }
 
     class ReviewViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
-        val nameText: TextView = itemView.findViewById(R.id.textReviewName)
-        val reviewText: TextView = itemView.findViewById(R.id.textReview)
+        val nameText: TextView = itemView.findViewById(R.id.review_name_text_view)
+        val reviewText: TextView = itemView.findViewById(R.id.review_text_view)
     }
 }
