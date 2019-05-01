@@ -18,13 +18,13 @@ package com.google.example.resizecodelab.view
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Gravity
-import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.PopupWindow
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
-import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.SavedStateVMFactory
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -95,25 +95,12 @@ class MainActivity : AppCompatActivity() {
         //Expand/collapse button for product description
         expandDescriptionButton.setOnClickListener { viewModel.toggleDescriptionExpanded() }
 
+        mainNestedScrollView = findViewById(R.id.main_nested_scroll)
         purchaseButton.setOnClickListener { showPurchaseDialog() }
     }
 
     private fun showPurchaseDialog() {
-        val textPopupMessage = TextView(this)
-        textPopupMessage.gravity = Gravity.CENTER
-        textPopupMessage.text = getString(R.string.popup_purchase)
-        TextViewCompat.setTextAppearance(textPopupMessage, R.style.TextAppearance_AppCompat_Title)
-
-        val layoutParams = FrameLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            Gravity.CENTER
-        )
-        val framePopup = FrameLayout(this)
-        framePopup.layoutParams = layoutParams
-        framePopup.setBackgroundColor(ContextCompat.getColor(this, android.R.color.white))
-
-        framePopup.addView(textPopupMessage)
+        val popupView = layoutInflater.inflate(R.layout.dialog_purchase, mainNestedScrollView, false)
 
         //Get window size
         val displayMetrics = resources.displayMetrics
@@ -129,7 +116,7 @@ class MainActivity : AppCompatActivity() {
         val popupY = (screenHeightPx / 2) - (popupHeightPx / 2)
 
         //Show the window
-        val popupWindow = PopupWindow(framePopup, popupWidthPx, popupHeightPx, true)
+        val popupWindow = PopupWindow(popupView, popupWidthPx, popupHeightPx, true)
         popupWindow.elevation = 10f
         popupWindow.showAtLocation(mainNestedScrollView, Gravity.NO_GRAVITY, popupX, popupY)
     }
