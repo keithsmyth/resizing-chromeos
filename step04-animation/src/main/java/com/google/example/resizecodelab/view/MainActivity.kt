@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.showControls.observe(this, NullFilteringObserver(::updateControlVisibility))
 
         viewModel.expandButtonTextResId.observe(this, NullFilteringObserver<Int> { resId ->
-            buttonExpand.text = getString(resId)
+            buttonExpand.setText(resId)
         })
 
         viewModel.productName.observe(this, NullFilteringObserver(textProductName::setText))
