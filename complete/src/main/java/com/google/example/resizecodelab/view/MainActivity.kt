@@ -34,7 +34,6 @@ import com.google.example.resizecodelab.R
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var viewModel: MainViewModel
     private lateinit var mainNestedScrollView: NestedScrollView
     private lateinit var loadingProgress: ProgressBar
     private lateinit var purchaseButton: Button
@@ -44,58 +43,50 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Normally you would receive this as an argument to this Activity.
-        val dataId = 1
-
-        //Retrieve the ViewModel with state data
-        viewModel = ViewModelProviders.of(this, SavedStateVMFactory(this, Bundle().apply { putInt(KEY_ID, dataId) }))
-            .get(MainViewModel::class.java)
-
-        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-        val isSmall = resources.configuration.screenWidthDp < 600
-
-        //Set up recycler view for reviews
-        val reviewsRecyclerView: RecyclerView = findViewById(R.id.reviews_recycler_view)
-        reviewsRecyclerView.layoutManager = if (isLandscape) {
-            GridLayoutManager(this, 2)
-        } else {
-            LinearLayoutManager(this)
-        }
-        val reviewAdapter = ReviewAdapter()
-        viewModel.reviews.observe(this, NullFilteringObserver(reviewAdapter::onReviewsLoaded))
-        reviewsRecyclerView.adapter = reviewAdapter
-
-        //Set up recycler view for suggested products
-        val suggestedRecyclerView: RecyclerView = findViewById(R.id.suggested_recycler_view)
-        suggestedRecyclerView.layoutManager = when {
-            isSmall -> LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-            isLandscape -> GridLayoutManager(this, 3)
-            else -> GridLayoutManager(this, 2)
-        }
-        val suggestionAdapter = SuggestionAdapter()
-        viewModel.suggestions.observe(this, NullFilteringObserver(suggestionAdapter::updateSuggestions))
-        suggestedRecyclerView.adapter = suggestionAdapter
-
+        mainNestedScrollView = findViewById(R.id.main_nested_scroll)
         loadingProgress = findViewById(R.id.loading_progress)
         purchaseButton = findViewById(R.id.purchase_button)
         expandDescriptionButton = findViewById(R.id.expand_description_button)
-        viewModel.showControls.observe(this, NullFilteringObserver(::updateControlVisibility))
-
-        viewModel.expandButtonTextResId.observe(this, NullFilteringObserver<Int> { resId ->
-            expandDescriptionButton.text = getString(resId)
-        })
-
         val productNameTextView: TextView = findViewById(R.id.product_name_text_view)
-        viewModel.productName.observe(this, NullFilteringObserver(productNameTextView::setText))
         val productCompanyTextView: TextView = findViewById(R.id.product_company_text_view)
-        viewModel.productCompany.observe(this, NullFilteringObserver(productCompanyTextView::setText))
         val productDescriptionTextView: TextView = findViewById(R.id.product_description_text_view)
-        viewModel.descriptionText.observe(this, NullFilteringObserver(productDescriptionTextView::setText))
+        val reviewsRecyclerView: RecyclerView = findViewById(R.id.reviews_recycler_view)
+        val suggestedRecyclerView: RecyclerView = findViewById(R.id.suggested_recycler_view)
 
-        //Expand/collapse button for product description
+        val reviewAdapter = ReviewAdapter()
+        val suggestionAdapter = SuggestionAdapter()
+
+        val dataId = 1 // Normally you would receive this as an argument to this Activity.
+        val viewModel = ViewModelProviders.of(this, SavedStateVMFactory(this, Bundle().apply { putInt(KEY_ID, dataId) }))
+            .get(MainViewModel::class.java)
+
+        viewModel.reviews.observe(this, NullFilteringObserver(reviewAdapter::onReviewsLoaded))
+        viewModel.suggestions.observe(this, NullFilteringObserver(suggestionAdapter::updateSuggestions))
+        viewModel.showControls.observe(this, NullFilteringObserver(::updateControlVisibility))
+        viewModel.expandButtonTextResId.observe(this, NullFilteringObserver<Int>(expandDescriptionButton::setText))
+        viewModel.productName.observe(this, NullFilteringObserver(productNameTextView::setText))
+        viewModel.productCompany.observe(this, NullFilteringObserver(productCompanyTextView::setText))
+        viewModel.descriptionText.observe(this, NullFilteringObserver(productDescriptionTextView::setText))
         expandDescriptionButton.setOnClickListener { viewModel.toggleDescriptionExpanded() }
 
-        mainNestedScrollView = findViewById(R.id.main_nested_scroll)
+        val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val isSmall = resources.configuration.screenWidthDp < 600
+        reviewsRecyclerView.layoutManager =
+            if (isLandscape) {
+                GridLayoutManager(this, 2)
+            } else {
+                LinearLayoutManager(this)
+            }
+        suggestedRecyclerView.layoutManager =
+            when {
+                isSmall -> LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+                isLandscape -> GridLayoutManager(this, 3)
+                else -> GridLayoutManager(this, 2)
+            }
+
+        reviewsRecyclerView.adapter = reviewAdapter
+        suggestedRecyclerView.adapter = suggestionAdapter
+
         purchaseButton.setOnClickListener { showPurchaseDialog() }
     }
 

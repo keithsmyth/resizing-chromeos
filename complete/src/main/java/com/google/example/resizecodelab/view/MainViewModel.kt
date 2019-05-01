@@ -29,11 +29,9 @@ private const val KEY_EXPANDED = "KEY_EXPANDED"
  */
 class MainViewModel(private val state: SavedStateHandle) : ViewModel() {
 
-    private val dataProvider = DataProvider()
+    private val appData = DataProvider.fetchData(getIdState())
 
-    private val appData = dataProvider.fetchData(getIdState())
-
-    val suggestions = dataProvider.fetchSuggestions(getIdState())
+    val suggestions = DataProvider.fetchSuggestions(getIdState())
 
     val showControls: LiveData<Boolean> = Transformations.map(appData) { it != null }
 
